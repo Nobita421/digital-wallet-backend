@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: digital_wallet
+      MYSQL_USER: wallet_user
+      MYSQL_PASSWORD: secure_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - wallet-network
+
+  backend:
+    build: ./digital-wallet-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/digital_wallet
+      SPRING_DATASOURCE_USERNAME: wallet_user
+      SPRING_DATASOURCE_PASSWORD: secure_password
+    depends_on:
+      - mysql
+    networks:
+      - wallet-network
+
+  frontend:
+    build: ./digital_wallet_app
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080/api
+    depends_on:
+      - backend
+    networks:
+      - wallet-network
+
+volumes:
+  mysql_data:
+
+networks:
+  wallet-network:
+    driver: bridge
