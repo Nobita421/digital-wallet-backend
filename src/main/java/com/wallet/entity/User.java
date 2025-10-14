@@ -1,4 +1,3 @@
-
 package com.wallet.entity;
 
 import jakarta.persistence.*;
@@ -36,6 +35,12 @@ public class User {
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transfer> receivedTransfers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Bill> bills;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Budget> budgets;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -78,6 +83,12 @@ public class User {
 
     public List<Transfer> getReceivedTransfers() { return receivedTransfers; }
     public void setReceivedTransfers(List<Transfer> receivedTransfers) { this.receivedTransfers = receivedTransfers; }
+
+    public List<Bill> getBills() { return bills; }
+    public void setBills(List<Bill> bills) { this.bills = bills; }
+
+    public List<Budget> getBudgets() { return budgets; }
+    public void setBudgets(List<Budget> budgets) { this.budgets = budgets; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

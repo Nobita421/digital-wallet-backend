@@ -9,4 +9,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     Page<Transaction> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    java.util.List<Transaction> findByUserAndTypeAndCreatedAtBetween(
+        com.wallet.entity.User user,
+        com.wallet.entity.TransactionType type,
+        java.time.LocalDateTime startDate,
+        java.time.LocalDateTime endDate);
 }

@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class TransactionController {
 
     @Autowired
@@ -20,12 +20,13 @@ public class TransactionController {
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getTransactions(
-            @RequestParam Long userId,
+            @RequestParam String userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int limit) {
         
         try {
-            Page<TransactionResponse> transactions = transactionService.getTransactionsByUserId(userId, page, limit);
+            Long userIdLong = Long.parseLong(userId);
+            Page<TransactionResponse> transactions = transactionService.getTransactionsByUserId(userIdLong, page, limit);
             
             Map<String, Object> response = new HashMap<>();
             response.put("transactions", transactions.getContent());

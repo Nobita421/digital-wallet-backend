@@ -1,30 +1,30 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
+  postgres:
+    image: postgres:17
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: digital_wallet
-      MYSQL_USER: wallet_user
-      MYSQL_PASSWORD: secure_password
+      POSTGRES_DB: digital_wallet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - wallet-network
 
   backend:
     build: ./digital-wallet-backend
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/digital_wallet
-      SPRING_DATASOURCE_USERNAME: wallet_user
-      SPRING_DATASOURCE_PASSWORD: secure_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/digital_wallet
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_PROFILES_ACTIVE: dev
     depends_on:
-      - mysql
+      - postgres
     networks:
       - wallet-network
 
@@ -33,14 +33,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8080/api
+      NEXT_PUBLIC_API_URL: http://backend:8081/api
     depends_on:
       - backend
     networks:
       - wallet-network
 
 volumes:
-  mysql_data:
+  postgres_data:
 
 networks:
   wallet-network:

@@ -1,9 +1,9 @@
 -- Insert sample user
-INSERT INTO users (email, name, phone, is_verified) VALUES 
+INSERT INTO users (email, name, phone, is_verified) VALUES
 ('john.doe@example.com', 'John Doe', '+1234567890', true);
 
 -- Insert wallet for the user
-INSERT INTO wallets (user_id, balance, currency) VALUES 
+INSERT INTO wallets (user_id, balance, currency) VALUES
 (1, 2540.50, 'USD');
 
 -- Insert sample transactions

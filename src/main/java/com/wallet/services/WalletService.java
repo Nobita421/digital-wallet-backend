@@ -1,4 +1,4 @@
-     package com.wallet.service;
+package com.wallet.service;
 
 import com.wallet.dto.WalletResponse;
 import com.wallet.entity.Wallet;
@@ -26,5 +26,11 @@ public class WalletService {
 
     public Wallet save(Wallet wallet) {
         return walletRepository.save(wallet);
+    }
+
+    public void updateBalance(Long userId, java.math.BigDecimal amount) {
+        Wallet wallet = findByUserId(userId);
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
     }
 }
