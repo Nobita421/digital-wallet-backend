@@ -3,10 +3,13 @@ package com.wallet.controller;
 import com.wallet.dto.BudgetRequest;
 import com.wallet.dto.BudgetResponse;
 import com.wallet.service.BudgetService;
+import com.wallet.repository.UserRepository;
+import com.wallet.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,15 +23,24 @@ public class BudgetController {
     @Autowired
     private BudgetService budgetService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User getUser(Authentication authentication) {
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, Object>> getBudgets(
-            @RequestParam String userId,
+            Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int limit) {
 
         try {
-            Long userIdLong = Long.parseLong(userId);
-            Page<BudgetResponse> budgets = budgetService.getBudgetsByUserId(userIdLong, page, limit);
+            User user = getUser(authentication);
+            Page<BudgetResponse> budgets = budgetService.getBudgetsByUserId(user.getId(), page, limit);
 
             Map<String, Object> response = new HashMap<>();
             response.put("budgets", budgets.getContent());
@@ -48,12 +60,12 @@ public class BudgetController {
 
     @PostMapping
     public ResponseEntity<BudgetResponse> createBudget(
-            @RequestParam String userId,
+            Authentication authentication,
             @Valid @RequestBody BudgetRequest request) {
 
         try {
-            Long userIdLong = Long.parseLong(userId);
-            BudgetResponse budget = budgetService.createBudget(userIdLong, request);
+            User user = getUser(authentication);
+            BudgetResponse budget = budgetService.createBudget(user.getId(), request);
             return ResponseEntity.ok(budget);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -63,13 +75,13 @@ public class BudgetController {
     @PutMapping("/{budgetId}")
     public ResponseEntity<BudgetResponse> updateBudget(
             @PathVariable String budgetId,
-            @RequestParam String userId,
+            Authentication authentication,
             @Valid @RequestBody BudgetRequest request) {
 
         try {
             Long budgetIdLong = Long.parseLong(budgetId);
-            Long userIdLong = Long.parseLong(userId);
-            BudgetResponse budget = budgetService.updateBudget(budgetIdLong, userIdLong, request);
+            User user = getUser(authentication);
+            BudgetResponse budget = budgetService.updateBudget(budgetIdLong, user.getId(), request);
             return ResponseEntity.ok(budget);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -79,12 +91,12 @@ public class BudgetController {
     @DeleteMapping("/{budgetId}")
     public ResponseEntity<?> deleteBudget(
             @PathVariable String budgetId,
-            @RequestParam String userId) {
+            Authentication authentication) {
 
         try {
             Long budgetIdLong = Long.parseLong(budgetId);
-            Long userIdLong = Long.parseLong(userId);
-            budgetService.deleteBudget(budgetIdLong, userIdLong);
+            User user = getUser(authentication);
+            budgetService.deleteBudget(budgetIdLong, user.getId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -92,10 +104,10 @@ public class BudgetController {
     }
 
     @PostMapping("/update-spending")
-    public ResponseEntity<?> updateBudgetSpending(@RequestParam String userId) {
+    public ResponseEntity<?> updateBudgetSpending(Authentication authentication) {
         try {
-            Long userIdLong = Long.parseLong(userId);
-            budgetService.updateBudgetSpending(userIdLong);
+            User user = getUser(authentication);
+            budgetService.updateBudgetSpending(user.getId());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

@@ -2,9 +2,12 @@ package com.wallet.controller;
 
 import com.wallet.dto.WalletResponse;
 import com.wallet.service.WalletService;
+import com.wallet.repository.UserRepository;
+import com.wallet.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -14,14 +17,18 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping
-    public ResponseEntity<WalletResponse> getWallet(@RequestParam String userId) {
+    public ResponseEntity<WalletResponse> getWallet(Authentication authentication) {
         try {
-            Long userIdLong = Long.parseLong(userId);
-            WalletResponse wallet = walletService.getWalletByUserId(userIdLong);
+            String email = authentication.getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            WalletResponse wallet = walletService.getWalletByUserId(user.getId());
             return ResponseEntity.ok(wallet);
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

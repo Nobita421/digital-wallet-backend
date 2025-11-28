@@ -45,10 +45,10 @@ public class TransferIntegrationTest {
     @BeforeEach
     void setUp() {
         // Create test users
-        sender = new User("sender@test.com", "Sender User", "+1234567890");
+        sender = new User("sender@test.com", "Sender User", "+1234567890", "password123");
         sender = userRepository.save(sender);
 
-        receiver = new User("receiver@test.com", "Receiver User", "+0987654321");
+        receiver = new User("receiver@test.com", "Receiver User", "+0987654321", "password123");
         receiver = userRepository.save(receiver);
 
         // Create wallets

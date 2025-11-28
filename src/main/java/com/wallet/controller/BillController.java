@@ -3,10 +3,13 @@ package com.wallet.controller;
 import com.wallet.dto.BillRequest;
 import com.wallet.dto.BillResponse;
 import com.wallet.service.BillService;
+import com.wallet.repository.UserRepository;
+import com.wallet.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,15 +23,24 @@ public class BillController {
     @Autowired
     private BillService billService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User getUser(Authentication authentication) {
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, Object>> getBills(
-            @RequestParam String userId,
+            Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int limit) {
 
         try {
-            Long userIdLong = Long.parseLong(userId);
-            Page<BillResponse> bills = billService.getBillsByUserId(userIdLong, page, limit);
+            User user = getUser(authentication);
+            Page<BillResponse> bills = billService.getBillsByUserId(user.getId(), page, limit);
 
             Map<String, Object> response = new HashMap<>();
             response.put("bills", bills.getContent());
@@ -48,12 +60,12 @@ public class BillController {
 
     @PostMapping
     public ResponseEntity<BillResponse> createBill(
-            @RequestParam String userId,
+            Authentication authentication,
             @Valid @RequestBody BillRequest request) {
 
         try {
-            Long userIdLong = Long.parseLong(userId);
-            BillResponse bill = billService.createBill(userIdLong, request);
+            User user = getUser(authentication);
+            BillResponse bill = billService.createBill(user.getId(), request);
             return ResponseEntity.ok(bill);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -63,12 +75,12 @@ public class BillController {
     @PostMapping("/pay")
     public ResponseEntity<BillResponse> payBill(
             @RequestParam String billId,
-            @RequestParam String userId) {
+            Authentication authentication) {
 
         try {
             Long billIdLong = Long.parseLong(billId);
-            Long userIdLong = Long.parseLong(userId);
-            BillResponse bill = billService.payBill(billIdLong, userIdLong);
+            User user = getUser(authentication);
+            BillResponse bill = billService.payBill(billIdLong, user.getId());
             return ResponseEntity.ok(bill);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -76,10 +88,10 @@ public class BillController {
     }
 
     @GetMapping("/overdue")
-    public ResponseEntity<?> getOverdueBills(@RequestParam String userId) {
+    public ResponseEntity<?> getOverdueBills(Authentication authentication) {
         try {
-            Long userIdLong = Long.parseLong(userId);
-            var bills = billService.getOverdueBills(userIdLong);
+            User user = getUser(authentication);
+            var bills = billService.getOverdueBills(user.getId());
             return ResponseEntity.ok(bills);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -88,11 +100,11 @@ public class BillController {
 
     @GetMapping("/upcoming")
     public ResponseEntity<?> getUpcomingBills(
-            @RequestParam String userId,
+            Authentication authentication,
             @RequestParam(defaultValue = "7") int days) {
         try {
-            Long userIdLong = Long.parseLong(userId);
-            var bills = billService.getUpcomingBills(userIdLong, days);
+            User user = getUser(authentication);
+            var bills = billService.getUpcomingBills(user.getId(), days);
             return ResponseEntity.ok(bills);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
