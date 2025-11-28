@@ -70,9 +70,15 @@ public class SecurityConfig {
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(java.util.Arrays.asList("http://localhost:3000"));
+        config.setAllowedOrigins(java.util.Arrays.asList(
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://frontend:3000",
+            "http://app:3000"
+        ));
         config.setAllowedHeaders(java.util.Arrays.asList("*"));
-        config.setAllowedMethods(java.util.Arrays.asList("*"));
+        config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setExposedHeaders(java.util.Arrays.asList("Authorization"));
         source.registerCorsConfiguration("/**", config);
         org.springframework.boot.web.servlet.FilterRegistrationBean<org.springframework.web.filter.CorsFilter> bean = new org.springframework.boot.web.servlet.FilterRegistrationBean<>(new org.springframework.web.filter.CorsFilter(source));
         bean.setOrder(org.springframework.core.Ordered.HIGHEST_PRECEDENCE);
