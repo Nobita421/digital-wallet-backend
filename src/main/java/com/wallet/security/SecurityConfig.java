@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableMethodSecurity
-@Profile("!test")
+@Profile({"dev", "prod", "default"})
 public class SecurityConfig {
 
     @Autowired
@@ -76,7 +76,9 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://frontend:3000",
-            "http://app:3000"
+            "http://app:3000",
+            "https://digital-wallet-frontend.vercel.app",
+            "https://*.vercel.app"
         ));
         config.setAllowedHeaders(java.util.Arrays.asList("*"));
         config.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
