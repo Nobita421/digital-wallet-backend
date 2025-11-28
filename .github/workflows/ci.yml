@@ -15,6 +15,29 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
+    # PostgreSQL service for tests
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: digital_wallet
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        # map port (not strictly required but useful for clarity)
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # Provide datasource env vars to the job so Spring uses the service
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/digital_wallet
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -29,8 +52,24 @@ jobs:
     - name: Build with Maven
       run: mvn clean compile
 
+    - name: Wait for Postgres to be ready
+      # Wait for up to 60 seconds for the postgres port to accept connections
+      run: |
+        echo "Waiting for Postgres at localhost:5432..."
+        for i in {1..60}; do
+          if (echo > /dev/tcp/localhost/5432) >/dev/null 2>&1; then
+            echo "Postgres is accepting connections."
+            exit 0
+          fi
+          echo "Postgres not ready yet, sleeping 1s..."
+          sleep 1
+        done
+        echo "Postgres did not start in time" >&2
+        exit 1
+
     - name: Run tests
-      run: mvn test
+      run: mvn test -DskipITs=false
+      # Tests will use SPRING_DATASOURCE_* environment variables above
 
     - name: Package
       run: mvn package -DskipTests
