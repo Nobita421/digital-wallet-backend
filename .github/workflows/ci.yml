@@ -53,7 +53,6 @@ jobs:
       run: mvn clean compile
 
     - name: Wait for Postgres to be ready
-      # Wait for up to 60 seconds for the postgres port to accept connections
       run: |
         echo "Waiting for Postgres at localhost:5432..."
         for i in {1..60}; do
@@ -66,6 +65,22 @@ jobs:
         done
         echo "Postgres did not start in time" >&2
         exit 1
+
+    - name: Create test database
+      # connect to the default 'postgres' database and create digital_wallet_test if missing
+      env:
+        PGPASSWORD: postgres
+      run: |
+        echo "Ensuring database digital_wallet_test exists..."
+        # wait for pg_isready explicitly
+        until pg_isready -h localhost -U postgres -d postgres >/dev/null 2>&1; do
+          echo "pg is not ready yet..."
+          sleep 1
+        done
+        # create the test database if it does not exist; ignore error if already exists
+        psql -h localhost -U postgres -d postgres -c "SELECT 1 FROM pg_database WHERE datname='digital_wallet_test';" | grep -q 1 || \
+          psql -h localhost -U postgres -d postgres -c "CREATE DATABASE digital_wallet_test;"
+        echo "Done."
 
     - name: Run tests
       run: mvn test -DskipITs=false
