@@ -1,4 +1,5 @@
-INSERT INTO users (email, name, phone, is_verified) VALUES ('john.doe@example.com', 'John Doe', '+1234567890', true);
+-- Insert sample user (password is bcrypt hash of 'password123')
+INSERT INTO users (email, name, phone, password, is_verified) VALUES ('john.doe@example.com', 'John Doe', '+1234567890', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRkgVduVfzCore3fakZ8.N8wDyq', true);
 INSERT INTO wallets (user_id, balance, currency) VALUES (1, 2540.50, 'USD');
 INSERT INTO transactions (user_id, type, amount, currency, description, status, reference) VALUES
 (1, 'DEPOSIT', 1000.00, 'USD', 'Bank Transfer', 'COMPLETED', 'TXN_001'),
