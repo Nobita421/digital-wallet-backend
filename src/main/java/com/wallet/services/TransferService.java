@@ -55,11 +55,11 @@ public class TransferService {
             walletService.save(receiverWallet);
 
             // Create transaction records
-            transactionService.createTransaction(sender, TransactionType.WITHDRAWAL, 
+            transactionService.createTransaction(sender, TransactionType.SEND, 
                     request.getAmount(), request.getCurrency(), 
                     "Transfer to " + receiver.getName());
 
-            transactionService.createTransaction(receiver, TransactionType.DEPOSIT, 
+            transactionService.createTransaction(receiver, TransactionType.RECEIVE, 
                     request.getAmount(), request.getCurrency(), 
                     "Transfer from " + sender.getName());
 
