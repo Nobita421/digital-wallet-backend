@@ -4,8 +4,10 @@ import com.wallet.dto.JwtResponse;
 import com.wallet.dto.LoginRequest;
 import com.wallet.dto.SignupRequest;
 import com.wallet.entity.User;
+import com.wallet.entity.Wallet;
 import com.wallet.repository.UserRepository;
 import com.wallet.security.JwtUtils;
+import com.wallet.service.WalletService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +33,9 @@ public class AuthController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    WalletService walletService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -94,6 +100,10 @@ public class AuthController {
 
         user.setRoles(roles);
         userRepository.save(user);
+
+        // Create wallet for the new user
+        Wallet wallet = new Wallet(user, BigDecimal.ZERO, "USD");
+        walletService.save(wallet);
 
         return ResponseEntity.ok("User registered successfully!");
     }
