@@ -4,10 +4,12 @@ import com.wallet.dto.WalletResponse;
 import com.wallet.service.WalletService;
 import com.wallet.repository.UserRepository;
 import com.wallet.entity.User;
+import com.wallet.entity.Wallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -22,15 +24,18 @@ public class WalletController {
 
     @GetMapping
     public ResponseEntity<WalletResponse> getWallet(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
         try {
-            String email = authentication.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            
             WalletResponse wallet = walletService.getWalletByUserId(user.getId());
             return ResponseEntity.ok(wallet);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            // If wallet not found, create a new one for the user
+            Wallet newWallet = new Wallet(user, BigDecimal.ZERO, "USD");
+            walletService.save(newWallet);
+            return ResponseEntity.ok(new WalletResponse(newWallet.getBalance(), newWallet.getCurrency()));
         }
     }
 }
