@@ -77,6 +77,7 @@ public class SecurityConfig {
             "http://127.0.0.1:3000",
             "http://frontend:3000",
             "http://app:3000",
+            "https://digital-wallet-appd.vercel.app",
             "https://digital-wallet-frontend.vercel.app",
             "https://*.vercel.app"
         ));
